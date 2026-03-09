@@ -13,8 +13,13 @@ Zero-backend party game app. All game state lives on the host device. Data trans
 
 - `npm run dev` — start dev server
 - `npm run build` — production build to `dist/`
-- `npx tsc --noEmit` — type check without emitting
+- `npx tsc -b` — type check (this is what CI runs, stricter than `--noEmit` — catches unused variables)
 - No test framework set up yet
+
+## Conventions
+
+- **Sentence case** for all UI text (buttons, labels, headings). e.g. "Generate join code", not "Generate Join Code". Only proper nouns and acronyms are capitalised.
+- **Commit and push** only when the user asks — don't auto-commit.
 
 ## Architecture
 
@@ -36,10 +41,11 @@ Game progresses through phases defined by `GamePhase` type in `src/types.ts`: se
 
 ### Key State Flows
 
-- **Adding players**: `ADD_PLAYER` action adds a `Player` + their `Slip[]` to state
+- **Adding players**: `ADD_PLAYER` action adds a `Player` + their `Slip[]` to state. Duplicate QR scans (identical payload) are silently ignored.
 - **Turn lifecycle**: `START_TURN` → (`GOT_IT` | `PASS_SLIP` | `FOUL`)* → (`TIMER_EXPIRED` | `END_TURN`) → `NEXT_TURN`
 - **Round lifecycle**: `START_ROUND` fills bowl → turns repeat → bowl empty triggers `END_ROUND` → `NEXT_ROUND` or game-over
 - **Bowl**: array of slip IDs. `GOT_IT` removes from bowl, `PASS_SLIP`/`FOUL` keep it in
+- **Got it debounce**: throttled to once per second to prevent double-taps
 
 ### QR Payloads
 
@@ -66,15 +72,15 @@ src/
 │   │   ├── SlipEntry.tsx
 │   │   └── QRCodeDisplay.tsx
 │   ├── host/                  # Host setup screens
-│   │   ├── GameSettings.tsx   # Timer, slips, passes, rounds config
-│   │   ├── AddPlayers.tsx     # Join QR + scanner + player list
+│   │   ├── GameSettings.tsx   # Timer, slips, passes, rounds config + info blurb
+│   │   ├── AddPlayers.tsx     # Join QR + scanner + player list + scan success overlay
 │   │   ├── HostSlipEntry.tsx  # Inline slip writing for host
 │   │   ├── DuplicateCheck.tsx
 │   │   ├── TeamAssignment.tsx # Random/manual team building
 │   │   └── TurnOrderSetup.tsx
 │   ├── game/                  # Gameplay screens
 │   │   ├── PreTurn.tsx        # Handoff screen before each turn
-│   │   ├── ActiveTurn.tsx     # Timer + slip + action buttons
+│   │   ├── ActiveTurn.tsx     # Timer + slip + action buttons (Got it debounced)
 │   │   ├── TurnSummary.tsx    # Post-turn results
 │   │   ├── RoundSummary.tsx   # End-of-round scores + MVP
 │   │   └── GameOver.tsx       # Winner, stats, confetti

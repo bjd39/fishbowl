@@ -19,7 +19,7 @@ All game state lives on the host's phone. The only data transfer is via QR codes
 
 The default game has three rounds (customizable):
 
-1. **Describe it** — use any words except the name itself
+1. **Articulate** — use any words except the name itself
 2. **One word** — single word clue only
 3. **Charades** — act it out, no sounds
 
