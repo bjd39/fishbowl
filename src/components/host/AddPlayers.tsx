@@ -7,6 +7,32 @@ import type { Player, Slip } from '../../types';
 import { HostSlipEntry } from './HostSlipEntry';
 import { findDuplicates } from '../../utils/dedup';
 
+function CopyLinkBox({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select the text
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="w-full flex items-center gap-2 bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-left hover:border-slate-400 transition-colors"
+    >
+      <span className="flex-1 text-sm text-slate-300 truncate">{url}</span>
+      <span className="shrink-0 text-xs text-slate-400">
+        {copied ? 'Copied!' : 'Copy'}
+      </span>
+    </button>
+  );
+}
+
 function ScanSuccessOverlay({ playerName, slipCount }: { playerName: string; slipCount: number }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-green-600 animate-scan-flash">
@@ -172,6 +198,7 @@ export function AddPlayers() {
         <div className="bg-white p-4 rounded-xl inline-block">
           <QRCodeSVG value={joinUrl} size={200} level="M" />
         </div>
+        <CopyLinkBox url={joinUrl} />
       </div>
 
       {/* Scanner */}
