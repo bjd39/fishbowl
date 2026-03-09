@@ -2,11 +2,12 @@ import { useState } from 'react';
 
 interface Props {
   slipsRequired: number;
+  title?: string;
   onComplete: (name: string, slips: string[]) => void;
   onCancel: () => void;
 }
 
-export function HostSlipEntry({ slipsRequired, onComplete, onCancel }: Props) {
+export function HostSlipEntry({ slipsRequired, title = 'Add yourself', onComplete, onCancel }: Props) {
   const [name, setName] = useState('');
   const [slips, setSlips] = useState<string[]>([]);
   const [current, setCurrent] = useState('');
@@ -23,7 +24,7 @@ export function HostSlipEntry({ slipsRequired, onComplete, onCancel }: Props) {
   if (step === 'name') {
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-center">Add yourself</h3>
+        <h3 className="text-xl font-bold text-center">{title}</h3>
         <input
           type="text"
           value={name}

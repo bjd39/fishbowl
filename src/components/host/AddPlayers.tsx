@@ -25,6 +25,7 @@ export function AddPlayers() {
   const [scanMessage, setScanMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [scanSuccess, setScanSuccess] = useState<{ playerName: string; slipCount: number } | null>(null);
   const [showHostEntry, setShowHostEntry] = useState(false);
+  const [hostAdded, setHostAdded] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = 'qr-scanner';
   const pauseRef = useRef(false);
@@ -131,6 +132,7 @@ export function AddPlayers() {
       contributedBy: playerId,
     }));
     dispatch({ type: 'ADD_PLAYER', player, slips });
+    if (!hostAdded) setHostAdded(true);
     setShowHostEntry(false);
   };
 
@@ -149,6 +151,7 @@ export function AddPlayers() {
       <div className="flex-1 p-4 max-w-lg mx-auto w-full slide-up">
         <HostSlipEntry
           slipsRequired={state.config.slipsPerPlayer}
+          title={hostAdded ? 'Add someone else' : 'Add yourself'}
           onComplete={handleHostSlips}
           onCancel={() => setShowHostEntry(false)}
         />
@@ -207,7 +210,7 @@ export function AddPlayers() {
             onClick={() => setShowHostEntry(true)}
             className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
           >
-            Add yourself
+            {hostAdded ? 'Add someone else' : 'Add yourself'}
           </button>
         </div>
       </div>
