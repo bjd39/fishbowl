@@ -35,7 +35,7 @@ export function TurnOrderSetup() {
 
   return (
     <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6 slide-up">
-      <h2 className="text-2xl font-bold text-center">Turn Order</h2>
+      <h2 className="text-2xl font-bold text-center">Turn order</h2>
 
       <div className="space-y-4">
         {state.teams.map(team => (
@@ -90,7 +90,7 @@ export function TurnOrderSetup() {
         onClick={handleStart}
         className="w-full py-4 bg-green-600 hover:bg-green-500 rounded-xl text-lg font-bold transition-colors"
       >
-        Confirm & Start Round 1
+        Confirm & start round 1
       </button>
     </div>
   );

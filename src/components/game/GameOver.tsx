@@ -146,13 +146,13 @@ export function GameOver() {
           onClick={() => dispatch({ type: 'PLAY_AGAIN' })}
           className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-lg font-bold transition-colors"
         >
-          Play Again
+          Play again
         </button>
         <button
           onClick={() => dispatch({ type: 'NEW_GAME' })}
           className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
         >
-          New Game
+          New game
         </button>
       </div>
     </div>

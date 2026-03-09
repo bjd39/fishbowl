@@ -51,12 +51,12 @@ export function TurnSummary() {
 
       {bowlEmpty ? (
         <div className="text-center space-y-4">
-          <div className="text-2xl font-bold text-yellow-400">Round Over!</div>
+          <div className="text-2xl font-bold text-yellow-400">Round over!</div>
           <button
             onClick={handleNext}
             className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-lg font-bold transition-colors"
           >
-            See Round Summary
+            See round summary
           </button>
         </div>
       ) : (
@@ -69,7 +69,7 @@ export function TurnSummary() {
             onClick={handleNext}
             className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-lg font-bold transition-colors"
           >
-            Next Turn
+            Next turn
           </button>
         </div>
       )}

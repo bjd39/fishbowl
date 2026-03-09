@@ -30,7 +30,7 @@ export function QRCodeDisplay({ playerName, slips, onAddAnother }: Props) {
         onClick={onAddAnother}
         className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
       >
-        Add Another Player
+        Add another player
       </button>
     </div>
   );

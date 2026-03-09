@@ -44,7 +44,7 @@ export function PreTurn() {
           onClick={() => dispatch({ type: 'START_TURN' })}
           className="w-full py-5 bg-green-600 hover:bg-green-500 rounded-xl text-xl font-bold transition-colors"
         >
-          Start Turn
+          Start turn
         </button>
 
         {team.playerIds.length > 1 && (

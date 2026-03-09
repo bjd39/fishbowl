@@ -98,7 +98,7 @@ export function GameSettings() {
 
         <div>
           <label className="block text-sm text-slate-400 mb-1">
-            Slips Per Player
+            Slips per player
           </label>
           <input
             type="number"
@@ -112,7 +112,7 @@ export function GameSettings() {
 
         <div>
           <label className="block text-sm text-slate-400 mb-1">
-            Passes Per Turn
+            Passes per turn
           </label>
           <div className="flex gap-2">
             {passOptions.map(opt => (
@@ -150,7 +150,9 @@ export function GameSettings() {
                     }}
                     className="flex-1 px-3 py-2 rounded bg-slate-700 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {ROUND_SUGGESTIONS.map(s => (
+                    {ROUND_SUGGESTIONS.filter(s =>
+                      s === round.name || !config.rounds.some(r => r.name === s)
+                    ).map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                     <option value="__custom">Custom...</option>
@@ -214,7 +216,7 @@ export function GameSettings() {
         disabled={config.rounds.length === 0 || config.rounds.some(r => !r.name.trim())}
         className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl text-lg font-bold transition-colors"
       >
-        Generate Join Code
+        Generate join code
       </button>
     </div>
   );

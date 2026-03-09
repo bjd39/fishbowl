@@ -161,7 +161,7 @@ export function AddPlayers() {
       {scanSuccess && (
         <ScanSuccessOverlay playerName={scanSuccess.playerName} slipCount={scanSuccess.slipCount} />
       )}
-      <h2 className="text-2xl font-bold text-center">Add Players</h2>
+      <h2 className="text-2xl font-bold text-center">Add players</h2>
 
       {/* Join QR Code */}
       <div className="text-center space-y-3">
@@ -193,21 +193,21 @@ export function AddPlayers() {
               onClick={startScanning}
               className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors"
             >
-              Scan Player
+              Scan player
             </button>
           ) : (
             <button
               onClick={stopScanning}
               className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
             >
-              Stop Scanning
+              Stop scanning
             </button>
           )}
           <button
             onClick={() => setShowHostEntry(true)}
             className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
           >
-            Add Yourself
+            Add yourself
           </button>
         </div>
       </div>
@@ -248,7 +248,7 @@ export function AddPlayers() {
       >
         {state.players.length < 4
           ? `Need ${4 - state.players.length} more player${4 - state.players.length > 1 ? 's' : ''}`
-          : 'Done Adding Players'}
+          : 'Done adding players'}
       </button>
     </div>
   );

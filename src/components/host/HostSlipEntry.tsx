@@ -23,7 +23,7 @@ export function HostSlipEntry({ slipsRequired, onComplete, onCancel }: Props) {
   if (step === 'name') {
     return (
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-center">Add Yourself</h3>
+        <h3 className="text-xl font-bold text-center">Add yourself</h3>
         <input
           type="text"
           value={name}
@@ -108,7 +108,7 @@ export function HostSlipEntry({ slipsRequired, onComplete, onCancel }: Props) {
           disabled={slips.length !== slipsRequired}
           className="flex-1 py-3 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg font-semibold transition-colors"
         >
-          Add to Game
+          Add to game
         </button>
       </div>
     </div>

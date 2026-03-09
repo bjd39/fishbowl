@@ -26,7 +26,7 @@ export function RoundSummary() {
       <div className="text-center space-y-1">
         <div className="text-sm text-slate-400">Round {state.currentRoundIndex + 1}</div>
         <h2 className="text-3xl font-bold">{round.name}</h2>
-        <p className="text-slate-300">Round Complete!</p>
+        <p className="text-slate-300">Round complete!</p>
       </div>
 
       {/* Round scores */}
@@ -76,14 +76,14 @@ export function RoundSummary() {
           onClick={() => dispatch({ type: 'NEXT_ROUND' })}
           className="w-full py-4 bg-blue-600 hover:bg-blue-500 rounded-xl text-lg font-bold transition-colors"
         >
-          Start Round {nextRoundIndex + 1}: {nextRound.name}
+          Start round {nextRoundIndex + 1}: {nextRound.name}
         </button>
       ) : (
         <button
           onClick={() => dispatch({ type: 'END_ROUND' })}
           className="w-full py-4 bg-purple-600 hover:bg-purple-500 rounded-xl text-lg font-bold transition-colors"
         >
-          See Final Results
+          See final results
         </button>
       )}
     </div>

@@ -143,7 +143,7 @@ export function TeamAssignment() {
         disabled={state.teams.some(t => t.playerIds.length === 0)}
         className="w-full py-4 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl text-lg font-bold transition-colors"
       >
-        Start Game
+        Start game
       </button>
     </div>
   );

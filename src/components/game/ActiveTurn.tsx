@@ -54,7 +54,7 @@ export function ActiveTurn() {
           onClick={handleGotIt}
           className="w-full py-5 bg-green-600 hover:bg-green-500 active:bg-green-700 rounded-xl text-xl font-bold transition-colors"
         >
-          Got It!
+          Got it!
         </button>
 
         <div className="flex gap-3">
@@ -85,7 +85,7 @@ export function ActiveTurn() {
           onClick={() => dispatch({ type: 'END_TURN' })}
           className="w-full py-2 text-slate-400 hover:text-white text-sm transition-colors"
         >
-          End Turn Early
+          End turn early
         </button>
       </div>
     </div>

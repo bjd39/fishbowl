@@ -111,7 +111,7 @@ export function SlipEntry({ playerName, slipsRequired, onComplete, onBack }: Pro
           disabled={slips.length !== slipsRequired}
           className="flex-1 py-3 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg font-semibold transition-colors"
         >
-          Generate QR Code
+          Generate QR code
         </button>
       </div>
     </div>
