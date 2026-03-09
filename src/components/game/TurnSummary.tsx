@@ -14,13 +14,8 @@ export function TurnSummary() {
 
   // Next player info
   const nextTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
-  const currentTeam = state.teams[state.currentTeamIndex];
   const nextTeam = state.teams[nextTeamIndex];
-  const nextPlayerIndex = nextTeamIndex === state.currentTeamIndex
-    ? (currentTeam.currentPlayerIndex + 1) % currentTeam.playerIds.length
-    : nextTeam.currentPlayerIndex;
-  const nextTeamForDisplay = nextTeam;
-  const nextPlayerId = nextTeamForDisplay.playerIds[nextTeamForDisplay.currentPlayerIndex];
+  const nextPlayerId = nextTeam.playerIds[nextTeam.currentPlayerIndex];
   const nextPlayer = state.players.find(p => p.id === nextPlayerId);
 
   const handleNext = () => {
@@ -68,7 +63,7 @@ export function TurnSummary() {
         <div className="text-center space-y-4 w-full">
           <p className="text-slate-400">
             Next up: <span className="text-white font-medium">{nextPlayer?.name}</span>
-            <span className="text-slate-500 ml-1">({nextTeamForDisplay.name})</span>
+            <span className="text-slate-500 ml-1">({nextTeam.name})</span>
           </p>
           <button
             onClick={handleNext}

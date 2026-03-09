@@ -51,12 +51,6 @@ export function TeamAssignment() {
   };
 
   const handleStart = () => {
-    // Update all player teamIds
-    const playerUpdates = state.players.map(p => {
-      const team = state.teams.find(t => t.playerIds.includes(p.id));
-      return { ...p, teamId: team?.id || '' };
-    });
-    // Dispatch would need batch — for now, proceed
     dispatch({ type: 'SET_PHASE', phase: 'turn-order' });
   };
 

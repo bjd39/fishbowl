@@ -5,7 +5,6 @@ import type {
   Player,
   Slip,
   Team,
-  Guess,
   TurnGuess,
   RoundScore,
   GamePhase,

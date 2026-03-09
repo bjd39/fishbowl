@@ -5,19 +5,7 @@ export function calculateRoundMVP(
   roundIndex: number,
   players: Player[],
 ): { mvpPlayerId: string; mvpTurnCount: number } {
-  // Group guesses by clue giver. Since we track per-turn, we need to find the player
-  // who got the most slips in a single turn.
-  // We approximate "single turn" by grouping consecutive guesses by the same player.
-  const turnCounts = new Map<string, number>();
-
-  // We already have turnGuessed accumulated per turn in the game state,
-  // but for round summary we receive all guesses for the round.
-  // Group by clueGiverPlayerId and find max count per player.
-  // Actually, we need "most slips in a single turn" — this requires knowing turn boundaries.
-  // We'll track this differently: from currentRoundGuesses, we need turn boundaries.
-  // For simplicity, we'll pass turn-level data in. For now, use total per player as approximation
-  // and fix with proper turn tracking.
-
+  // Group guesses by clue giver and find max per player (approximates single-turn MVP)
   const playerCounts = new Map<string, number>();
   for (const g of guesses) {
     if (g.roundIndex === roundIndex) {
