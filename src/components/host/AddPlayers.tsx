@@ -15,6 +15,7 @@ export function AddPlayers() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = 'qr-scanner';
   const pauseRef = useRef(false);
+  const scannedPayloadsRef = useRef(new Set<string>());
 
   const joinUrl = generateJoinUrl(state.config.slipsPerPlayer);
 
@@ -49,6 +50,12 @@ export function AddPlayers() {
           if (pauseRef.current) return;
           pauseRef.current = true;
 
+          // Ignore exact duplicate scans
+          if (scannedPayloadsRef.current.has(decodedText)) {
+            pauseRef.current = false;
+            return;
+          }
+
           const result = decodePayload(decodedText);
           if ('error' in result) {
             setScanMessage({ text: result.error, type: 'error' });
@@ -58,6 +65,8 @@ export function AddPlayers() {
             }, 2000);
             return;
           }
+
+          scannedPayloadsRef.current.add(decodedText);
 
           const playerId = crypto.randomUUID();
           const player: Player = {

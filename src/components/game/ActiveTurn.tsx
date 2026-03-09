@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useGame } from '../../state/gameState';
 import { Timer } from '../shared/Timer';
 
 export function ActiveTurn() {
   const { state, dispatch } = useGame();
+  const lastGotItRef = useRef(0);
 
   const slip = state.allSlips.find(s => s.id === state.turnSlipId);
   const canPass =
@@ -14,6 +15,13 @@ export function ActiveTurn() {
 
   const onExpire = useCallback(() => {
     dispatch({ type: 'TIMER_EXPIRED' });
+  }, [dispatch]);
+
+  const handleGotIt = useCallback(() => {
+    const now = Date.now();
+    if (now - lastGotItRef.current < 1000) return;
+    lastGotItRef.current = now;
+    dispatch({ type: 'GOT_IT' });
   }, [dispatch]);
 
   return (
@@ -43,7 +51,7 @@ export function ActiveTurn() {
       {/* Action Buttons */}
       <div className="space-y-3 mt-6 pb-4">
         <button
-          onClick={() => dispatch({ type: 'GOT_IT' })}
+          onClick={handleGotIt}
           className="w-full py-5 bg-green-600 hover:bg-green-500 active:bg-green-700 rounded-xl text-xl font-bold transition-colors"
         >
           Got It!
