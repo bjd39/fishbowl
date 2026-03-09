@@ -6,6 +6,7 @@ import { ROUND_SUGGESTIONS } from '../../types';
 export function GameSettings() {
   const { state, dispatch } = useGame();
   const [config, setConfig] = useState<GameConfig>({ ...state.config });
+  const [showInfo, setShowInfo] = useState(false);
 
   const updateConfig = (partial: Partial<GameConfig>) => {
     setConfig(prev => ({ ...prev, ...partial }));
@@ -50,7 +51,31 @@ export function GameSettings() {
 
   return (
     <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6 slide-up">
-      <h1 className="text-3xl font-bold text-center">Fishbowl</h1>
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="text-3xl font-bold">Fishbowl</h1>
+          <button
+            onClick={() => setShowInfo(!showInfo)}
+            className="w-7 h-7 rounded-full border border-slate-500 text-slate-400 text-sm hover:border-slate-300 hover:text-white transition-colors"
+            aria-label="What is Fishbowl?"
+          >
+            ?
+          </button>
+        </div>
+        {showInfo && (
+          <div className="mt-3 text-left bg-slate-800 rounded-lg p-4 text-sm text-slate-300 space-y-2 slide-up">
+            <p>
+              <strong className="text-white">Fishbowl</strong> is a party game where everyone writes names of famous people, characters, or things on slips of paper and puts them in a bowl.
+            </p>
+            <p>
+              Players split into teams and take turns pulling slips from the bowl, trying to get their teammates to guess as many as possible before the timer runs out.
+            </p>
+            <p>
+              The same slips are used across multiple rounds, each with different rules — first describe freely, then one word only, then charades. Knowing what's in the bowl from earlier rounds is half the fun!
+            </p>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-4">
         <div>
