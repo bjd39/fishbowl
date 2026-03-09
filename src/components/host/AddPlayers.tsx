@@ -7,10 +7,23 @@ import type { Player, Slip } from '../../types';
 import { HostSlipEntry } from './HostSlipEntry';
 import { findDuplicates } from '../../utils/dedup';
 
+function ScanSuccessOverlay({ playerName, slipCount }: { playerName: string; slipCount: number }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-green-600 animate-scan-flash">
+      <div className="text-center space-y-4">
+        <div className="text-8xl">✓</div>
+        <div className="text-3xl font-bold">{playerName}</div>
+        <div className="text-xl text-green-100">{slipCount} slips added</div>
+      </div>
+    </div>
+  );
+}
+
 export function AddPlayers() {
   const { state, dispatch } = useGame();
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [scanSuccess, setScanSuccess] = useState<{ playerName: string; slipCount: number } | null>(null);
   const [showHostEntry, setShowHostEntry] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = 'qr-scanner';
@@ -81,14 +94,11 @@ export function AddPlayers() {
           }));
 
           dispatch({ type: 'ADD_PLAYER', player, slips });
-          setScanMessage({
-            text: `Added ${result.player} with ${result.slips.length} slips`,
-            type: 'success',
-          });
+          setScanSuccess({ playerName: result.player, slipCount: result.slips.length });
 
           setTimeout(() => {
+            setScanSuccess(null);
             pauseRef.current = false;
-            setScanMessage(null);
           }, 1500);
         },
         () => {}, // ignore scan failures (no QR found in frame)
@@ -148,6 +158,9 @@ export function AddPlayers() {
 
   return (
     <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6 slide-up">
+      {scanSuccess && (
+        <ScanSuccessOverlay playerName={scanSuccess.playerName} slipCount={scanSuccess.slipCount} />
+      )}
       <h2 className="text-2xl font-bold text-center">Add Players</h2>
 
       {/* Join QR Code */}
