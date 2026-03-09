@@ -79,13 +79,13 @@ export interface GameState {
 }
 
 export const DEFAULT_ROUNDS: RoundConfig[] = [
-  { name: 'Describe it', description: 'Use any words except the name itself. No spelling, no rhymes.' },
+  { name: 'Articulate', description: 'Use any words except the name itself. No spelling, no rhymes.' },
   { name: 'One word', description: 'Give a single word clue only.' },
   { name: 'Charades', description: 'Act it out — no sounds allowed!' },
 ];
 
 export const ROUND_SUGGESTIONS = [
-  'Describe it',
+  'Articulate',
   'One word',
   'Charades',
   'Charades under a sheet',
