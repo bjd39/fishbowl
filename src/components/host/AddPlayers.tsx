@@ -2,10 +2,12 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useGame } from '../../state/gameState';
-import { generateJoinUrl, decodePayload } from '../../utils/qr';
+import { generateJoinUrl, generateJoinUrlWithPeer, decodePayload } from '../../utils/qr';
 import type { Player, Slip } from '../../types';
 import { HostSlipEntry } from './HostSlipEntry';
 import { findDuplicates } from '../../utils/dedup';
+import { useHostNetwork } from '../../network/HostNetworkContext';
+import { ConnectionStatusDot } from '../shared/ConnectionStatus';
 
 function CopyLinkBox({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
@@ -47,6 +49,7 @@ function ScanSuccessOverlay({ playerName, slipCount }: { playerName: string; sli
 
 export function AddPlayers() {
   const { state, dispatch } = useGame();
+  const { hostId, devices } = useHostNetwork();
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [scanSuccess, setScanSuccess] = useState<{ playerName: string; slipCount: number } | null>(null);
@@ -57,7 +60,12 @@ export function AddPlayers() {
   const pauseRef = useRef(false);
   const scannedPayloadsRef = useRef(new Set<string>());
 
-  const joinUrl = generateJoinUrl(state.config.slipsPerPlayer);
+  const isOnline = state.config.networkMode === 'online';
+
+  // Use peer join URL in online mode (if host network available), fallback to writer URL
+  const joinUrl = isOnline && hostId
+    ? generateJoinUrlWithPeer(hostId, state.config.slipsPerPlayer)
+    : generateJoinUrl(state.config.slipsPerPlayer);
 
   const stopScanning = useCallback(async () => {
     if (scannerRef.current) {
@@ -113,6 +121,7 @@ export function AddPlayers() {
             id: playerId,
             name: result.player,
             teamId: '',
+            deviceId: 'host',
           };
           const slips: Slip[] = result.slips.map(text => ({
             id: crypto.randomUUID(),
@@ -151,7 +160,7 @@ export function AddPlayers() {
 
   const handleHostSlips = (name: string, slipTexts: string[]) => {
     const playerId = crypto.randomUUID();
-    const player: Player = { id: playerId, name, teamId: '' };
+    const player: Player = { id: playerId, name, teamId: '', deviceId: 'host' };
     const slips: Slip[] = slipTexts.map(text => ({
       id: crypto.randomUUID(),
       text,
@@ -185,6 +194,10 @@ export function AddPlayers() {
     );
   }
 
+  // Count connected devices and networked players
+  const connectedDevices = devices.filter(d => d.connected).length;
+  const hostPlayers = state.players.filter(p => p.deviceId === 'host');
+
   return (
     <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-6 slide-up">
       {scanSuccess && (
@@ -194,48 +207,64 @@ export function AddPlayers() {
 
       {/* Join QR Code */}
       <div className="text-center space-y-3">
-        <p className="text-slate-400">Players: scan this code to write your slips</p>
+        <p className="text-slate-400">
+          {isOnline && hostId
+            ? 'Players: scan this code to join on your phone'
+            : 'Players: scan this code to write your slips'}
+        </p>
         <div className="bg-white p-4 rounded-xl inline-block">
           <QRCodeSVG value={joinUrl} size={200} level="M" />
         </div>
         <CopyLinkBox url={joinUrl} />
+        {isOnline && hostId && connectedDevices > 0 && (
+          <p className="text-sm text-slate-500">
+            {connectedDevices} device{connectedDevices !== 1 ? 's' : ''} connected
+          </p>
+        )}
       </div>
 
-      {/* Scanner */}
+      {/* Scanner + host entry buttons */}
       <div className="space-y-3">
-        <div id={scannerContainerId} className={`rounded-lg overflow-hidden ${scanning ? '' : 'hidden'}`} />
+        {/* QR scanner (only in local/pass-the-phone mode) */}
+        {!isOnline && (
+          <>
+            <div id={scannerContainerId} className={`rounded-lg overflow-hidden ${scanning ? '' : 'hidden'}`} />
 
-        {scanMessage && (
-          <div
-            className={`text-center py-2 px-4 rounded-lg font-medium ${
-              scanMessage.type === 'success'
-                ? 'bg-green-900/50 text-green-300'
-                : 'bg-red-900/50 text-red-300'
-            }`}
-          >
-            {scanMessage.text}
-          </div>
+            {scanMessage && (
+              <div
+                className={`text-center py-2 px-4 rounded-lg font-medium ${
+                  scanMessage.type === 'success'
+                    ? 'bg-green-900/50 text-green-300'
+                    : 'bg-red-900/50 text-red-300'
+                }`}
+              >
+                {scanMessage.text}
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex gap-2">
-          {!scanning ? (
-            <button
-              onClick={startScanning}
-              className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors"
-            >
-              Scan player
-            </button>
-          ) : (
-            <button
-              onClick={stopScanning}
-              className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
-            >
-              Stop scanning
-            </button>
+          {!isOnline && (
+            !scanning ? (
+              <button
+                onClick={startScanning}
+                className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors text-sm"
+              >
+                Scan player QR
+              </button>
+            ) : (
+              <button
+                onClick={stopScanning}
+                className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors text-sm"
+              >
+                Stop scanning
+              </button>
+            )
           )}
           <button
             onClick={() => setShowHostEntry(true)}
-            className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors"
+            className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-semibold transition-colors text-sm"
           >
             {hostAdded ? 'Add someone else' : 'Add yourself'}
           </button>
@@ -248,16 +277,50 @@ export function AddPlayers() {
           <h3 className="text-sm text-slate-400">
             Players ({state.players.length})
           </h3>
-          {state.players.map(p => (
+
+          {/* Networked players grouped by device (online mode only) */}
+          {isOnline && devices.map(device => {
+            const devicePlayers = state.players.filter(p => p.deviceId === device.id);
+            if (devicePlayers.length === 0) return null;
+            return (
+              <div key={device.id} className="space-y-1">
+                {devicePlayers.map(p => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ConnectionStatusDot status={device.connected ? 'connected' : 'disconnected'} />
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-sm text-slate-400">
+                        {state.allSlips.filter(s => s.contributedBy === p.id).length} slips
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => dispatch({ type: 'REMOVE_PLAYER', playerId: p.id })}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                      aria-label={`Remove ${p.name}`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+
+          {/* Host-device players */}
+          {hostPlayers.map(p => (
             <div
               key={p.id}
               className="flex items-center justify-between bg-slate-800 rounded-lg px-4 py-2"
             >
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="font-medium">{p.name}</span>
-                <span className="text-sm text-slate-400 ml-2">
+                <span className="text-sm text-slate-400">
                   {state.allSlips.filter(s => s.contributedBy === p.id).length} slips
                 </span>
+                <span className="text-xs text-slate-500">(this device)</span>
               </div>
               <button
                 onClick={() => dispatch({ type: 'REMOVE_PLAYER', playerId: p.id })}

@@ -36,3 +36,9 @@ export function generateJoinUrl(slipsPerPlayer: number): string {
   const base = import.meta.env.BASE_URL || '/';
   return `${origin}${base}#/write?slips=${slipsPerPlayer}`;
 }
+
+export function generateJoinUrlWithPeer(hostId: string, slipsPerPlayer: number): string {
+  const origin = window.location.origin;
+  const base = import.meta.env.BASE_URL || '/';
+  return `${origin}${base}#/join?hostId=${encodeURIComponent(hostId)}&slips=${slipsPerPlayer}`;
+}

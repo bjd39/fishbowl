@@ -1,8 +1,11 @@
+export type NetworkMode = 'online' | 'local';
+
 export interface GameConfig {
   timerDuration: number;
   passesPerTurn: number; // 0, 1, 2, or Infinity
   slipsPerPlayer: number;
   rounds: RoundConfig[];
+  networkMode: NetworkMode;
 }
 
 export interface RoundConfig {
@@ -14,6 +17,7 @@ export interface Player {
   id: string;
   name: string;
   teamId: string;
+  deviceId: string; // 'host' for players on the host device
 }
 
 export interface Slip {
@@ -76,6 +80,7 @@ export interface GameState {
   currentRoundGuesses: Guess[];
   phase: GamePhase;
   turnClueGiverId: string | null;
+  remoteTurnActive: boolean; // true when a remote device is running a turn
 }
 
 export const DEFAULT_ROUNDS: RoundConfig[] = [
@@ -98,4 +103,5 @@ export const DEFAULT_CONFIG: GameConfig = {
   passesPerTurn: 1,
   slipsPerPlayer: 4,
   rounds: [...DEFAULT_ROUNDS],
+  networkMode: 'online',
 };

@@ -5,9 +5,10 @@ interface Props {
   slipsRequired: number;
   onComplete: (slips: string[]) => void;
   onBack: () => void;
+  submitLabel?: string;
 }
 
-export function SlipEntry({ playerName, slipsRequired, onComplete, onBack }: Props) {
+export function SlipEntry({ playerName, slipsRequired, onComplete, onBack, submitLabel = 'Generate QR code' }: Props) {
   const [slips, setSlips] = useState<string[]>([]);
   const [current, setCurrent] = useState('');
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -111,7 +112,7 @@ export function SlipEntry({ playerName, slipsRequired, onComplete, onBack }: Pro
           disabled={slips.length !== slipsRequired}
           className="flex-1 py-3 bg-green-600 hover:bg-green-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-lg font-semibold transition-colors"
         >
-          Generate QR code
+          {submitLabel}
         </button>
       </div>
     </div>

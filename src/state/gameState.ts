@@ -32,6 +32,7 @@ export const initialGameState: GameState = {
   currentRoundGuesses: [],
   phase: 'settings',
   turnClueGiverId: null,
+  remoteTurnActive: false,
 };
 
 export type GameAction =
@@ -55,7 +56,9 @@ export type GameAction =
   | { type: 'SKIP_PLAYER' }
   | { type: 'NEXT_ROUND' }
   | { type: 'PLAY_AGAIN' }
-  | { type: 'NEW_GAME' };
+  | { type: 'NEW_GAME' }
+  | { type: 'START_REMOTE_TURN' }
+  | { type: 'APPLY_TURN_RESULT'; guessed: { slipId: string; timeToGuess: number }[]; remainingBowl: string[] };
 
 function drawSlip(bowl: string[], currentSlipId: string | null): string | null {
   if (bowl.length === 0) return null;
@@ -336,6 +339,49 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'NEW_GAME':
       return { ...initialGameState };
+
+    case 'START_REMOTE_TURN': {
+      const team = state.teams[state.currentTeamIndex];
+      const playerId = team.playerIds[team.currentPlayerIndex];
+      return {
+        ...state,
+        turnActive: true,
+        turnSlipId: null,
+        turnStartTime: performance.now(),
+        slipShownTime: null,
+        turnPassesRemaining: state.config.passesPerTurn === Infinity ? Infinity : state.config.passesPerTurn,
+        turnGuessed: [],
+        turnClueGiverId: playerId,
+        remoteTurnActive: true,
+        phase: 'active-turn',
+      };
+    }
+
+    case 'APPLY_TURN_RESULT': {
+      if (!state.turnClueGiverId) return state;
+      const team = state.teams[state.currentTeamIndex];
+
+      const turnGuesses: TurnGuess[] = action.guessed.map((g) => ({
+        slipId: g.slipId,
+        clueGiverPlayerId: state.turnClueGiverId!,
+        teamId: team.id,
+        roundIndex: state.currentRoundIndex,
+        timeToGuess: g.timeToGuess,
+      }));
+
+      const newRoundGuesses = [...state.currentRoundGuesses, ...turnGuesses];
+
+      return {
+        ...state,
+        bowl: action.remainingBowl,
+        turnGuessed: turnGuesses,
+        currentRoundGuesses: newRoundGuesses,
+        turnActive: false,
+        turnSlipId: null,
+        remoteTurnActive: false,
+        phase: 'turn-summary',
+      };
+    }
 
     default:
       return state;

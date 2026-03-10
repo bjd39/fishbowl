@@ -9,6 +9,16 @@ export function PreTurn() {
   const playerId = team.playerIds[team.currentPlayerIndex];
   const player = state.players.find(p => p.id === playerId);
 
+  const isRemote = player ? player.deviceId !== 'host' : false;
+
+  const handleStartTurn = () => {
+    if (isRemote) {
+      dispatch({ type: 'START_REMOTE_TURN' });
+    } else {
+      dispatch({ type: 'START_TURN' });
+    }
+  };
+
   return (
     <div className="flex-1 p-4 max-w-lg mx-auto w-full flex flex-col items-center justify-center space-y-6 slide-up">
       <div className="text-center space-y-1">
@@ -35,16 +45,22 @@ export function PreTurn() {
         <div className="text-lg text-slate-300">turn! ({team.name})</div>
       </div>
 
-      <p className="text-slate-400 text-center">
-        Pass the phone to {player?.name}
-      </p>
+      {isRemote ? (
+        <p className="text-slate-400 text-center">
+          {player?.name}'s turn will run on their device
+        </p>
+      ) : (
+        <p className="text-slate-400 text-center">
+          Pass the phone to {player?.name}
+        </p>
+      )}
 
       <div className="w-full space-y-3">
         <button
-          onClick={() => dispatch({ type: 'START_TURN' })}
+          onClick={handleStartTurn}
           className="w-full py-5 bg-green-600 hover:bg-green-500 rounded-xl text-xl font-bold transition-colors"
         >
-          Start turn
+          {isRemote ? 'Send turn to their device' : 'Start turn'}
         </button>
 
         {team.playerIds.length > 1 && (

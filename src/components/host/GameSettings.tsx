@@ -78,6 +78,41 @@ export function GameSettings() {
       </div>
 
       <div className="space-y-4">
+        {/* Network mode toggle */}
+        <div>
+          <label className="block text-sm text-slate-400 mb-2">
+            How are players joining?
+          </label>
+          <div className="flex gap-2">
+            <button
+              onClick={() => updateConfig({ networkMode: 'online' })}
+              className={`flex-1 py-3 rounded-lg font-medium transition-colors text-sm ${
+                config.networkMode === 'online'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              }`}
+            >
+              <div>On their phones</div>
+              <div className={`text-xs mt-0.5 ${config.networkMode === 'online' ? 'text-blue-200' : 'text-slate-500'}`}>
+                Everyone plays on their own device
+              </div>
+            </button>
+            <button
+              onClick={() => updateConfig({ networkMode: 'local' })}
+              className={`flex-1 py-3 rounded-lg font-medium transition-colors text-sm ${
+                config.networkMode === 'local'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              }`}
+            >
+              <div>Pass the phone</div>
+              <div className={`text-xs mt-0.5 ${config.networkMode === 'local' ? 'text-blue-200' : 'text-slate-500'}`}>
+                One device, pass it around
+              </div>
+            </button>
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm text-slate-400 mb-1">
             Timer Duration: {config.timerDuration}s
@@ -216,7 +251,7 @@ export function GameSettings() {
         disabled={config.rounds.length === 0 || config.rounds.some(r => !r.name.trim())}
         className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 rounded-xl text-lg font-bold transition-colors"
       >
-        Generate join code
+        {config.networkMode === 'online' ? 'Generate join code' : 'Next'}
       </button>
     </div>
   );
