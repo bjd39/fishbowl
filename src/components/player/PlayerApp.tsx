@@ -109,11 +109,11 @@ function PlayerFlow({ slipsRequired }: { slipsRequired: number }) {
 }
 
 function PlayerFlowWithOverlay({ slipsRequired }: { slipsRequired: number }) {
-  const { status } = usePlayerNetwork();
+  const { status, hasConnectedOnce } = usePlayerNetwork();
   return (
     <>
       <PlayerFlow slipsRequired={slipsRequired} />
-      <ReconnectingOverlay status={status} />
+      {hasConnectedOnce && <ReconnectingOverlay status={status} />}
     </>
   );
 }

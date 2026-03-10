@@ -16,6 +16,7 @@ const RECONNECT_MAX_DELAY = 15000;
 
 interface UsePlayerPeerReturn {
   status: ConnectionStatus;
+  hasConnectedOnce: boolean;
   send: (msg: PlayerToHostMessage) => void;
   gameState: BroadcastGameState | null;
   turnAssignment: TurnAssignmentMessage | null;
@@ -28,6 +29,7 @@ interface UsePlayerPeerReturn {
 
 export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
+  const [hasConnectedOnce, setHasConnectedOnce] = useState(false);
   const [gameState, setGameState] = useState<BroadcastGameState | null>(null);
   const [turnAssignment, setTurnAssignment] = useState<TurnAssignmentMessage | null>(null);
   const [lastAccepted, setLastAccepted] = useState<PlayerAcceptedMessage | null>(null);
@@ -38,86 +40,10 @@ export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const destroyedRef = useRef(false);
   const pendingMessagesRef = useRef<PlayerToHostMessage[]>([]);
-
-  const setupConnection = useCallback((peer: Peer) => {
-    const conn = peer.connect(hostId, { reliable: true });
-    connRef.current = conn;
-
-    conn.on('open', () => {
-      setStatus('connected');
-      reconnectAttemptRef.current = 0;
-
-      // Flush any pending messages
-      for (const msg of pendingMessagesRef.current) {
-        conn.send(msg);
-      }
-      pendingMessagesRef.current = [];
-    });
-
-    conn.on('data', (data) => {
-      if (!isHostToPlayerMessage(data)) return;
-      const msg = data as HostToPlayerMessage;
-      switch (msg.type) {
-        case 'game_state':
-          setGameState(msg.state);
-          break;
-        case 'turn_assignment':
-          setTurnAssignment(msg);
-          break;
-        case 'player_accepted':
-          setLastAccepted(msg);
-          setLastRejected(null);
-          break;
-        case 'player_rejected':
-          setLastRejected(msg);
-          setLastAccepted(null);
-          break;
-      }
-    });
-
-    conn.on('close', () => {
-      connRef.current = null;
-      if (!destroyedRef.current) {
-        setStatus('reconnecting');
-        attemptReconnect(peer);
-      }
-    });
-
-    conn.on('error', (err) => {
-      console.error('[PlayerPeer] Connection error:', err);
-      connRef.current = null;
-      if (!destroyedRef.current) {
-        setStatus('reconnecting');
-        attemptReconnect(peer);
-      }
-    });
-  }, [hostId]);
-
-  const attemptReconnect = useCallback((peer: Peer) => {
-    if (destroyedRef.current) return;
-
-    const attempt = reconnectAttemptRef.current;
-    const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, attempt), RECONNECT_MAX_DELAY);
-
-    reconnectTimerRef.current = setTimeout(() => {
-      if (destroyedRef.current) return;
-
-      reconnectAttemptRef.current = attempt + 1;
-
-      // If the peer itself is disconnected from the signaling server, reconnect it first
-      if (peer.disconnected && !peer.destroyed) {
-        peer.reconnect();
-        // Wait a bit for the peer to reconnect to signaling, then connect to host
-        setTimeout(() => {
-          if (!destroyedRef.current && !peer.destroyed) {
-            setupConnection(peer);
-          }
-        }, 1000);
-      } else if (!peer.destroyed) {
-        setupConnection(peer);
-      }
-    }, delay);
-  }, [setupConnection]);
+  const hostIdRef = useRef(hostId);
+  hostIdRef.current = hostId;
+  const turnAssignmentRef = useRef(turnAssignment);
+  turnAssignmentRef.current = turnAssignment;
 
   useEffect(() => {
     destroyedRef.current = false;
@@ -132,17 +58,97 @@ export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
     });
     peerRef.current = peer;
 
+    function setupConnection() {
+      const conn = peer.connect(hostIdRef.current, { reliable: true });
+      connRef.current = conn;
+
+      conn.on('open', () => {
+        setStatus('connected');
+        setHasConnectedOnce(true);
+        reconnectAttemptRef.current = 0;
+
+        // Flush any pending messages
+        for (const msg of pendingMessagesRef.current) {
+          conn.send(msg);
+        }
+        pendingMessagesRef.current = [];
+      });
+
+      conn.on('data', (data) => {
+        if (!isHostToPlayerMessage(data)) return;
+        const msg = data as HostToPlayerMessage;
+        switch (msg.type) {
+          case 'game_state':
+            setGameState(msg.state);
+            break;
+          case 'turn_assignment':
+            setTurnAssignment(msg);
+            break;
+          case 'player_accepted':
+            setLastAccepted(msg);
+            setLastRejected(null);
+            break;
+          case 'player_rejected':
+            setLastRejected(msg);
+            setLastAccepted(null);
+            break;
+        }
+      });
+
+      conn.on('close', () => {
+        connRef.current = null;
+        if (!destroyedRef.current) {
+          setStatus('reconnecting');
+          attemptReconnect();
+        }
+      });
+
+      conn.on('error', (err) => {
+        console.error('[PlayerPeer] Connection error:', err);
+        connRef.current = null;
+        if (!destroyedRef.current) {
+          setStatus('reconnecting');
+          attemptReconnect();
+        }
+      });
+    }
+
+    function attemptReconnect() {
+      if (destroyedRef.current) return;
+
+      const attempt = reconnectAttemptRef.current;
+      const delay = Math.min(RECONNECT_BASE_DELAY * Math.pow(2, attempt), RECONNECT_MAX_DELAY);
+
+      reconnectTimerRef.current = setTimeout(() => {
+        if (destroyedRef.current) return;
+
+        reconnectAttemptRef.current = attempt + 1;
+
+        // If the peer itself is disconnected from the signaling server, reconnect it first
+        if (peer.disconnected && !peer.destroyed) {
+          peer.reconnect();
+          // Wait a bit for the peer to reconnect to signaling, then connect to host
+          setTimeout(() => {
+            if (!destroyedRef.current && !peer.destroyed) {
+              setupConnection();
+            }
+          }, 1000);
+        } else if (!peer.destroyed) {
+          setupConnection();
+        }
+      }, delay);
+    }
+
     peer.on('open', () => {
-      setupConnection(peer);
+      setupConnection();
     });
 
     peer.on('error', (err) => {
       console.error('[PlayerPeer] Peer error:', err);
-      // Don't set error status if we're already trying to reconnect
       if (err.type === 'peer-unavailable') {
         // Host peer ID not found — might be temporary
         setStatus('reconnecting');
-        attemptReconnect(peer);
+        attemptReconnect();
       } else if (err.type !== 'disconnected') {
         setStatus('error');
       }
@@ -157,7 +163,7 @@ export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
 
     // Warn before unload during active turn
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (turnAssignment) {
+      if (turnAssignmentRef.current) {
         e.preventDefault();
       }
     };
@@ -173,7 +179,7 @@ export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
       peerRef.current = null;
       connRef.current = null;
     };
-  }, [hostId, setupConnection, attemptReconnect, turnAssignment]);
+  }, [hostId]);
 
   const send = useCallback((msg: PlayerToHostMessage) => {
     const conn = connRef.current;
@@ -192,6 +198,7 @@ export function usePlayerPeer(hostId: string): UsePlayerPeerReturn {
 
   return {
     status,
+    hasConnectedOnce,
     send,
     gameState,
     turnAssignment,
