@@ -42,12 +42,13 @@ export function useHostPeer(
     peerRef.current = peer;
 
     peer.on('open', (id) => {
+      console.log('[HostPeer] Registered with signaling server as:', id);
       setHostId(id);
       setStatus('connected');
     });
 
     peer.on('error', (err) => {
-      console.error('[HostPeer] Error:', err);
+      console.error('[HostPeer] Error:', err.type, err);
       if (err.type === 'network' || err.type === 'server-error') {
         setStatus('error');
       }

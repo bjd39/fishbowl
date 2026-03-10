@@ -49,7 +49,7 @@ function ScanSuccessOverlay({ playerName, slipCount }: { playerName: string; sli
 
 export function AddPlayers() {
   const { state, dispatch } = useGame();
-  const { hostId, devices } = useHostNetwork();
+  const { hostId, devices, status: hostStatus } = useHostNetwork();
   const [scanning, setScanning] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [scanSuccess, setScanSuccess] = useState<{ playerName: string; slipCount: number } | null>(null);
@@ -216,10 +216,29 @@ export function AddPlayers() {
           <QRCodeSVG value={joinUrl} size={200} level="M" />
         </div>
         <CopyLinkBox url={joinUrl} />
-        {isOnline && hostId && connectedDevices > 0 && (
-          <p className="text-sm text-slate-500">
-            {connectedDevices} device{connectedDevices !== 1 ? 's' : ''} connected
-          </p>
+        {isOnline && (
+          <div className="text-sm">
+            {hostStatus === 'connecting' && (
+              <p className="text-yellow-400">Connecting to signaling server...</p>
+            )}
+            {hostStatus === 'error' && (
+              <p className="text-red-400">Failed to connect to signaling server</p>
+            )}
+            {hostStatus === 'connected' && !hostId && (
+              <p className="text-yellow-400">Registering host...</p>
+            )}
+            {hostStatus === 'connected' && hostId && (
+              <p className="text-green-400">
+                Ready for players to join
+                {connectedDevices > 0 && (
+                  <> · {connectedDevices} device{connectedDevices !== 1 ? 's' : ''} connected</>
+                )}
+              </p>
+            )}
+            {hostStatus === 'reconnecting' && (
+              <p className="text-yellow-400">Reconnecting to signaling server...</p>
+            )}
+          </div>
         )}
       </div>
 
