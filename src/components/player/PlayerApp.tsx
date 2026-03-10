@@ -12,8 +12,8 @@ import { ReconnectingOverlay } from '../shared/ReconnectingOverlay';
 
 type PlayerPhase = 'connecting' | 'write-slips' | 'waiting';
 
-function PlayerFlow({ slipsRequired }: { slipsRequired: number }) {
-  const { status, gameState, turnAssignment, clearTurnAssignment } = usePlayerNetwork();
+function PlayerFlow({ slipsRequired, hostId }: { slipsRequired: number; hostId: string }) {
+  const { status, debugLog, gameState, turnAssignment, clearTurnAssignment } = usePlayerNetwork();
   const [phase, setPhase] = useState<PlayerPhase>('connecting');
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [addingAnother, setAddingAnother] = useState(false);
@@ -62,7 +62,7 @@ function PlayerFlow({ slipsRequired }: { slipsRequired: number }) {
   }
 
   if (phase === 'connecting') {
-    return <Connecting status={status} />;
+    return <Connecting status={status} hostId={hostId} debugLog={debugLog} />;
   }
 
   // Show write slips if no players submitted yet, or if adding another
@@ -108,11 +108,11 @@ function PlayerFlow({ slipsRequired }: { slipsRequired: number }) {
   return <WaitingLobby playerNames={playerNames} />;
 }
 
-function PlayerFlowWithOverlay({ slipsRequired }: { slipsRequired: number }) {
+function PlayerFlowWithOverlay({ slipsRequired, hostId }: { slipsRequired: number; hostId: string }) {
   const { status, hasConnectedOnce } = usePlayerNetwork();
   return (
     <>
-      <PlayerFlow slipsRequired={slipsRequired} />
+      <PlayerFlow slipsRequired={slipsRequired} hostId={hostId} />
       {hasConnectedOnce && <ReconnectingOverlay status={status} />}
     </>
   );
@@ -122,7 +122,7 @@ export function PlayerApp({ hostId, slipsRequired }: { hostId: string; slipsRequ
   return (
     <PlayerNetworkProvider hostId={hostId}>
       <div className="min-h-full flex flex-col">
-        <PlayerFlowWithOverlay slipsRequired={slipsRequired} />
+        <PlayerFlowWithOverlay slipsRequired={slipsRequired} hostId={hostId} />
       </div>
     </PlayerNetworkProvider>
   );

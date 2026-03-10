@@ -2,9 +2,11 @@ import type { ConnectionStatus } from '../../network/messages';
 
 interface Props {
   status: ConnectionStatus;
+  hostId: string;
+  debugLog: string[];
 }
 
-export function Connecting({ status }: Props) {
+export function Connecting({ status, hostId, debugLog }: Props) {
   const isError = status === 'error' || status === 'disconnected';
 
   return (
@@ -30,6 +32,20 @@ export function Connecting({ status }: Props) {
           </button>
         </>
       )}
+
+      {/* Debug info */}
+      <div className="w-full max-w-sm text-left space-y-2">
+        <p className="text-xs text-slate-600">
+          Host: {hostId} · Status: {status}
+        </p>
+        {debugLog.length > 0 && (
+          <div className="bg-slate-900 rounded p-2 max-h-40 overflow-y-auto">
+            {debugLog.map((line, i) => (
+              <div key={i} className="text-xs text-slate-500 font-mono">{line}</div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import type {
 interface PlayerNetworkContextValue {
   status: ConnectionStatus;
   hasConnectedOnce: boolean;
+  debugLog: string[];
   send: (msg: PlayerToHostMessage) => void;
   gameState: BroadcastGameState | null;
   turnAssignment: TurnAssignmentMessage | null;
